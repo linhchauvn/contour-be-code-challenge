@@ -1,0 +1,4 @@
+rootProject.name = 'contour-be-code-challenge'
+
+include 'scheduler-api'
+include 'scheduler-impl'

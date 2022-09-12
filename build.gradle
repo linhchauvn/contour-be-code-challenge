@@ -1,0 +1,72 @@
+plugins {
+    id 'base'
+}
+
+import network.contour.scheduler.gradle.ObfuscatedTar
+
+subprojects {
+    apply plugin: 'java-library'
+
+    group = 'network.contour'
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: getProperty('junit.version')
+        testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: getProperty('junit.version')
+        testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: getProperty('junit.version')
+    }
+
+    tasks.withType(Test) {
+        useJUnitPlatform()
+    }
+
+    java {
+        withSourcesJar()
+    }
+
+    tasks.named(JavaPlugin.COMPILE_JAVA_TASK_NAME, JavaCompile) {
+        if(JavaVersion.current() > JavaVersion.VERSION_1_8) {
+            options.release = 8
+        }
+    }
+}
+
+wrapper {
+    gradleVersion = getProperty('gradle.version')
+    distributionType = Wrapper.DistributionType.BIN
+}
+
+configurations {
+    solutionClasspath {
+        transitive = true
+        visible = false
+        canBeConsumed = false
+    }
+    solutionSources {
+        transitive = true
+        visible = false
+        canBeConsumed = false
+    }
+}
+
+dependencies {
+    solutionClasspath project(path: ':scheduler-impl', configuration: 'archives')
+    solutionClasspath project(path: ':scheduler-impl', configuration: 'exportedClasspath')
+    solutionSources project(path: ':scheduler-impl', configuration: 'sourceArchives')
+}
+
+tasks.register('solutionArchive', ObfuscatedTar) {
+    def ext = project.extensions.getByType(BasePluginExtension.class)
+    destinationDirectory = ext.libsDirectory
+    archiveBaseName = 'solution'
+    into('lib') {
+        from(configurations.solutionClasspath)
+    }
+    into('src') {
+        from(configurations.solutionSources)
+    }
+}
+

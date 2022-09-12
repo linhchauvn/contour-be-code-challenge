@@ -1,0 +1,34 @@
+configurations {
+    sourceArchives {
+        visible = true
+        transitive = true
+        canBeConsumed = true
+        canBeResolved = true
+    }
+
+    exportedClasspath {
+        visible = true
+        transitive = true
+        canBeConsumed = true
+        canBeResolved = true
+        extendsFrom runtimeClasspath
+    }
+
+    provided {
+        visible = false
+        transitive = true
+        canBeConsumed = false
+        canBeResolved = true
+    }
+
+    testImplementation.extendsFrom provided
+    compileOnly.extendsFrom provided
+}
+
+Provider<Jar> sourcesJarProvider = tasks.named('sourcesJar')
+
+dependencies {
+    provided project(':scheduler-api')
+
+    sourceArchives files(sourcesJarProvider)
+}
